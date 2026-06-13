@@ -320,7 +320,7 @@
             <button class="btn-yes" id="btnYes" onclick="handleYes()">
                 Oui, je veux !
             </button>
-            <button class="btn-no" id="btnNo" onclick="handleNo()">
+            <button class="btn-no" id="btnNo">
                 Non
             </button>
         </div>
@@ -444,6 +444,43 @@
                 setTimeout(() => { isEscaping = false; }, 200);
             }
         });
+
+        // Mobile: make the No button move when touched, and prevent the click
+        let movedOnTouch = false;
+
+        function moveNoButtonRandomMobile() {
+            const containerRect = btnContainer.getBoundingClientRect();
+            const maxX = Math.max(10, containerRect.width - 70);
+            const maxY = Math.max(10, containerRect.height - 40);
+
+            const newX = Math.random() * maxX;
+            const newY = Math.random() * maxY;
+
+            btnNo.style.left = newX + 'px';
+            btnNo.style.top = newY + 'px';
+            btnNo.style.transform = 'scale(' + (0.8 + Math.random() * 0.4) + ')';
+        }
+
+        // Only enable touch behavior on small screens
+        if (window.matchMedia && window.matchMedia('(max-width: 600px)').matches) {
+            btnNo.addEventListener('touchstart', function(e) {
+                moveNoButtonRandomMobile();
+                movedOnTouch = true;
+                // allow a short window where the subsequent click is ignored
+                setTimeout(() => { movedOnTouch = false; }, 400);
+            }, {passive: true});
+
+            // Prevent accidental click if the button moved on touch
+            btnNo.addEventListener('click', function(e) {
+                if (movedOnTouch) {
+                    e.stopImmediatePropagation();
+                    e.preventDefault();
+                    movedOnTouch = false;
+                    return;
+                }
+                handleNo();
+            });
+        }
 
         // Handle Yes click
         function handleYes() {
